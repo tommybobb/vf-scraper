@@ -31,4 +31,10 @@ async function getActiveDocuments(){
   return result;
 }
 
-module.exports = { insertDocument, updateDocumentInMongoDB, checkGUIDExists, getActiveDocuments };
+function formatTime(date) {
+  const hours = String(date.getHours()).padStart(2, '0'); // Ensure two digits for hours
+  const minutes = String(date.getMinutes()).padStart(2, '0'); // Ensure two digits for minutes
+  return `${hours}:${minutes}`;
+}
+
+module.exports = { insertDocument, updateDocumentInMongoDB, checkGUIDExists, getActiveDocuments, formatTime };
