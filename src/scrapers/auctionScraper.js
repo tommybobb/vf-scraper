@@ -47,12 +47,14 @@ class AuctionScraper {
           doc = await updateDocumentInMongoDB(guidExists, recordFields);
         }
 
-        auctionIds.push(auctionId);
+        if(linkText === 'View catalogue'){
+          auctionIds.push(auctionId);
+        }
 
-        const status = recordFields.startDate < new Date() && !recordFields.isActive ? 'Late' : 'On Time';
-        const logString = `Index ${index}: Action ID - ${recordFields.guid} | Active: ${recordFields.isActive} | Status: ${status}`;
-        console.log(logString);
-        console.log('-----------');
+        // const status = recordFields.startDate < new Date() && !recordFields.isActive ? 'Late' : 'On Time';
+        // const logString = `Index ${index}: Action ID - ${recordFields.guid} | Active: ${recordFields.isActive} | Status: ${status}`;
+        // console.log(logString);
+        // console.log('-----------');
       }));
 
       const activeDocs = await getActiveDocuments();
