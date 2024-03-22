@@ -1,7 +1,7 @@
 const axios = require('axios');
 const cheerio = require('cheerio');
 const MongoDB = require('../db/mongodb');
-const { insertDocument, updateDocumentInMongoDB, checkGUIDExists } = require('../utils/helpers');
+const { insertDocument, updateDocumentInMongoDB, checkGUIDExists, getActiveDocuments } = require('../utils/helpers');
 
 class AuctionScraper {
   constructor() {
@@ -19,6 +19,7 @@ class AuctionScraper {
 
       await Promise.all(linksWithSpecificClass.map(async (index, element) => {
         const linkText = $(element).text();
+        const linkLink = $(element).attr('href');
         const auctionTop = $(element).closest('div.content.overflow-wrap');
         const auctionItem = auctionTop.closest('div.auction-list-item');
         const auctionId = auctionItem.attr('data-auction-id');
@@ -28,12 +29,15 @@ class AuctionScraper {
 
         const guidExists = await checkGUIDExists(auctionId);
 
+        
         const recordFields = {
           guid: auctionId,
           startDate: new Date(startDate),
           endDate: new Date(endDate),
           isActive: linkText === 'View catalogue',
-          LastUpdated: new Date()
+          LastUpdated: new Date(),
+          actualEndDate: "",
+          url: linkLink
         };
 
         let doc;
@@ -51,7 +55,25 @@ class AuctionScraper {
         console.log('-----------');
       }));
 
-      console.log(auctionIds);
+      const activeDocs = await getActiveDocuments();
+
+      await Promise.all(activeDocs.map(async (item, index) => {
+        
+        if(!auctionIds.includes(item.guid)){
+          item.actualEndDate = new Date();
+          item.isActive = false;
+          const doc = await updateDocumentInMongoDB(item._id, item);
+        } else {
+          if(item.actualStartDate == ''){
+            item.actualStartDate = new Date();
+            const doc = await updateDocumentInMongoDB(item._id, item);
+          }
+
+        }
+
+        
+
+      }));
 
       await this.db.disconnect();
     } catch (error) {

@@ -20,4 +20,15 @@ async function checkGUIDExists(guid) {
   return result ? result._id : null;
 }
 
-module.exports = { insertDocument, updateDocumentInMongoDB, checkGUIDExists };
+async function getActiveDocuments(){
+  const collection = MongoDB.getCollection();
+
+  const filter = {};
+  filter["actualEndDate"] = "";
+
+  const result = await collection.find(filter).toArray();
+
+  return result;
+}
+
+module.exports = { insertDocument, updateDocumentInMongoDB, checkGUIDExists, getActiveDocuments };
